@@ -1,0 +1,49 @@
+extends layout
+
+block css
+    link(rel="stylesheet" href="/css/style.css")
+
+block content
+    div(class="container")
+        div(class="row")
+            div(class="col m6 offset-m3")
+                div(class="card teal lighten-3")
+                    div(class="card-content white-text")
+                        span(id="message")
+                        span(class="card-title") Find Closest Fibonacci Number
+                        form(method="POST" action="/find-fibo" id="fibo-form")
+                            input(type="number" name="num" placeholder="Pleace enter number" value="0" id="num")
+                            button(type="submit" class="waves-effect waves-light btn" style="width: 100%") Run                                
+                    div(class="card-action")
+                        span Closest Fibonacci number: 
+                        span(class="fibo-number") 0
+
+block scripts
+    script.
+        const fiboNumberElement = document.querySelector('.fibo-number');
+        const fiboFormElement = document.querySelector('#fibo-form');
+        const numElement = document.querySelector('#num');
+        const messageElement = document.querySelector('#message');
+
+        fiboFormElement.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const num = numElement.value;
+            if (!/\D/.test(num)) {
+                const request = new XMLHttpRequest();
+                request.open(event.target.method, event.target.action, true);
+                request.setRequestHeader("Content-Type", "application/json");
+                request.onload = function() {
+                    if (this.status >= 200 && this.status < 300) {
+                        let { fiboNumber: fibo } = JSON.parse(this.response);
+                        fiboNumberElement.innerText = fibo;
+                    }
+                }
+                request.send(JSON.stringify({ num: num }));
+            } else {
+                const errorElement = '<div class="materialert error"><i class="material-icons">error_outline</i> <span>Incorrect input. Please enter an integer!</span></div>';
+                messageElement.innerHTML = errorElement;
+                setTimeout(function() {
+                    messageElement.innerHTML = '';
+                }, 2000);
+            }
+        });
